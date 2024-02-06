@@ -1,5 +1,7 @@
 #CURRENTLY DEFINING A SCALE FROM 1 - 10 WHERE 0=CALM, 5=NEUTRAL, 10=ANGRY
 
+#hellooooooo hehe
+
 import serial
 import time
 
@@ -7,6 +9,7 @@ mysp=__import__('my_voice_analysis')
 f="AUDIO_FILE_NAME"
 c=r"FILE_NAME"
 
+test = True;
 
 ##VOICE ANALYSIS WEIGHTING (sr = speech rate, fp = # of fillers/pauses)
 sr_list = [];
