@@ -1,6 +1,13 @@
 #BIG ALGORITHM THAT CODES IN THAT MATRIX TABLE THING THAT WE MADE
 #LAST UPDATED 3/5/24 BY ABBY
 
+
+import time
+import numpy
+import my-voice-analysis
+from scipy import stats
+
+
 '''
 HEART RATE INPUT FILE FORMAT:
     starting time stamp [integer : sec]
@@ -19,11 +26,6 @@ VOCAL ANALYSIS INPUT FILE FORMAT:
     ...
     ending time stamp [integer : sec]
 '''
-
-
-import time
-import numpy
-import my-voice-analysis
 
 
 start_time = time.time();
@@ -105,37 +107,53 @@ while system_status:
 
 #WEIGHTS THE HEART RATE DATA
 def hr_weight():
+    print("Beginning heart rate analysis... ");
+    
     prev_hr_avg = hr_avg;
     hr_avg = sum(hr_list)/len(hr_list);
-    delta_hr = current_hr - hr_list[-1];
-    hr_list.append(current_hr);
-    delta_hr_avg = hr_avg - prev_hr_avg;
+    delta_hr_avg = hr_avg - prev_hr_avg; #difference between current average and average from previous run
 
-    #calculation of heart trate metric depending on changes in the average and current value
-    if delta_hr == 0:
-        hr_metric = 0;
-    elif delta_hr < 0 and delta_hr_avg < 0:
-        hr_metric = -1;
-    elif delta_hr > 0 and delta_hr_avg > 0:
-        hr_metric = 1;
-    elif delta_hr > 0 and delta_hr_avg < 0:
-        hr_metric = -1;
-    elif delta_hr < 0 and delta_hr_avg > 0:
-        hr_metric = 1;
+    hr_index = list(range(0,len(hr_list)));
+
+    hr_slope, hr_intercept, hr_r_value, hr_p_value, std_err = stats.linregress(hr_index,hr_list);
+
+    #analyzes the slope of the current data segment
+    if hr_slope < 10:
+        hr_metric += -3;
+    elif hr_slope > 10:
+        hr_metric += 3;
     else:
-        print("POTENTIAL ERROR IN delta_hr hr calculations")
+        hr_metric += 0;
 
+    #analyzes the difference between the current and previous averages
+        if delta_hr_avg < 0:
+            hr_metric += -1;
+        elif delta_hr_avg > 0:
+            hr_metric += 1;
+        else:
+            hr_metric += 0;
+
+
+    print("Heart rate analysis complete!");
+    
     return hr_metric
 
     
 #WEIGHTS THE FUNDAMENTAL FREQUENCY DATA
 def fr_weight():
+    print("Beginning fundamental frequency analysis...");
+    prev_fr_avg = fr_avg;
+    fr_avg = sum(fr_list)/len(fr_list);
+    delta_fr_avg = fr_avg - prev_fr_avg; #difference between current average and average from previous run
 
+    print("Fundamental frequency analysis complete!");
+    
     return fr_metric
 
 #WEIGHTS THE ARTICULATION RATE DATA
 def ar_weight():
-
+    print("Beginning articulation rate analysis...");
+    print("Articulation rate analysis complete!");
     return ar_weight
 
 #CALCULATES THE OUTPUT OF THE MATRIX TO BE SENT TO THE HAPTIC SYSTEM DEPENDING ON THE INPUT DATA
@@ -146,6 +164,8 @@ def matrix(hr_metric, ff_metric, ar_metric):
     #ar = articulation rate
     #mo = matrix output
     #va = vocal analysis
+
+    print("Beginning matrix manipulation calculations...");
 
     if type(hr_metric) == None:
         raise Exception("ERROR: Heart-rate metric not defined.");
@@ -205,6 +225,7 @@ def matrix(hr_metric, ff_metric, ar_metric):
 #SEND SERIAL OUTPUT TO THE HAXYLS TO NOTIFY THE USER AS INDICATED BY THE METRIC OUTPUT
 #CALCULATED ABOVE
 def haptic_output():
+    print("Current Speaker Tag: " + current_speaker);
     
     if mo == -2:
         
