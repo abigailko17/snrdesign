@@ -4,7 +4,7 @@
 
 import time
 import numpy
-#import my_voice_analysis
+import serial
 from scipy import stats
 
 
@@ -61,7 +61,7 @@ ar_avg = 0;
 
 #WEIGHTS THE HEART RATE DATA
 def hr_weight(hr_avg):
-    print("Beginning heart rate analysis... ");
+    print("Beginning heart rate analysis... " + '\n');
 
     metric = 0;
 
@@ -72,6 +72,8 @@ def hr_weight(hr_avg):
     hr_index = list(range(0,len(hr_list)));
 
     hr_slope, hr_intercept, hr_r_value, hr_p_value, std_err = stats.linregress(hr_index,hr_list);
+    print("SLOPE : " + str(hr_slope))
+    print("INTERCEPT : " + str(hr_intercept))
 
     #analyzes the slope of the current data segment
     if hr_slope < 10:
@@ -89,27 +91,47 @@ def hr_weight(hr_avg):
     else:
         metric += 0;
 
-
-    print("Heart rate analysis complete!");
+    print("Heart rate analysis complete!" + '\n');
     
     return metric
 
     
 #WEIGHTS THE FUNDAMENTAL FREQUENCY DATA
-def fr_weight():
-    print("Beginning fundamental frequency analysis...");
-    prev_fr_avg = fr_avg;
-    fr_avg = sum(fr_list)/len(fr_list);
-    delta_fr_avg = fr_avg - prev_fr_avg; #difference between current average and average from previous run
+def ff_weight(ff_avg):
+    print("Beginning fundamental frequency analysis..." + '\n');
+    metric = 0
+    prev_ff_avg = ff_avg;
+    ff_avg = sum(ff_list)/len(ff_list);
+    delta_ff_avg = ff_avg - prev_ff_avg; #difference between current average and average from previous run
+
+    ff_index = list(range(0,len(ff_list)));
+
+    ff_slope, ff_intercept, ff_r_value, ff_p_value, std_err = stats.linregress(ff_index,ff_list);
+
+    #analyzes the slope of the current data segment
+    if ff_slope < 0:
+        metric += -2;
+    elif ff_slope > 0:
+        metric += 2;
+    else:
+        metric += 0;
+
+    #analyzes the difference between the current and previous averages
+    if delta_ff_avg < 0:
+        metric += -1;
+    elif delta_ff_avg > 0:
+        metric += 1;
+    else:
+        metric += 0;
 
     print("Fundamental frequency analysis complete!");
     
-    return fr_metric
+    return metric
 
 #WEIGHTS THE ARTICULATION RATE DATA
-def ar_weight():
-    print("Beginning articulation rate analysis...");
-    print("Articulation rate analysis complete!");
+def ar_weight(ar_avg):
+    print("Beginning articulation rate analysis..." + '\n');
+    print("Articulation rate analysis complete!" + '\n');
     return ar_weight
 
 #CALCULATES THE OUTPUT OF THE MATRIX TO BE SENT TO THE HAPTIC SYSTEM DEPENDING ON THE INPUT DATA
@@ -180,7 +202,7 @@ def matrix(hr_metric, ff_metric, ar_metric):
 
 #SEND SERIAL OUTPUT TO THE HAXYLS TO NOTIFY THE USER AS INDICATED BY THE METRIC OUTPUT
 #CALCULATED ABOVE
-def haptic_output():
+def haptic_output(mo):
     print("Current Speaker Tag: " + current_speaker);
     '''
     if mo == -2:
@@ -193,8 +215,6 @@ def haptic_output():
 
     elif mo == 2:
     '''
-
-
 
 
 #MAIN LOOP THAT CALLS ALL OF THE FUNCTIONS AND DOES ALL OF THE STUFF
@@ -235,17 +255,25 @@ while system_status:
     
     for i in va_content:
         temp = i.split(' ');
-        ff_list.append(temp[0]);
-        ar_list.append(temp[1]);
+        ff_list.append(int(temp[0]));
+        ar_list.append(int(temp[1]));
 
     hr_metric = hr_weight(hr_avg);
     print(hr_metric)
+
+    ff_metric = ff_weight(ff_avg);
+    print(ff_metric);
+
+    ar_metric = ar_weight(ar_avg);
+    print(ar_metric);
+
+    haptic_output(matrix(hr_metric,ff_metric,ar_metric));
     
     time.sleep(time_chunk);
     break
-        
+    
 
-
+'''
 #NEED TO FIX THIS THIS SYNTAX DOESNT EXIST LOL WILL FIX LATER
 #WRITE TO FILES TO SAVE THE DATA FOR THE ENTIRE ANALYSIS RUN
 hr_f= open("heartratedata.txt", "w")
@@ -259,8 +287,7 @@ ff_f.close()
 ar_f = open("articulationrate.txt","w")
 ar_f.write(ar_data_log)
 ar_f.close()
-
-
+'''
 
 
 
