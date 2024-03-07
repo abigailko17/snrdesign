@@ -74,11 +74,12 @@ def hr_weight(hr_avg):
     hr_slope, hr_intercept, hr_r_value, hr_p_value, std_err = stats.linregress(hr_index,hr_list);
     print("SLOPE : " + str(hr_slope))
     print("INTERCEPT : " + str(hr_intercept))
+    print("R-VALUE :" + str(hr_r_value))
 
     #analyzes the slope of the current data segment
-    if hr_slope < 10:
+    if hr_r_value < -0.3:
         metric += -3;
-    elif hr_slope > 10:
+    elif hr_r_value > 0.3:
         metric += 3;
     else:
         metric += 0;
@@ -109,9 +110,9 @@ def ff_weight(ff_avg):
     ff_slope, ff_intercept, ff_r_value, ff_p_value, std_err = stats.linregress(ff_index,ff_list);
 
     #analyzes the slope of the current data segment
-    if ff_slope < 0:
+    if ff_r_value < -0.3:
         metric += -2;
-    elif ff_slope > 0:
+    elif ff_r_value > 0.3:
         metric += 2;
     else:
         metric += 0;
@@ -264,8 +265,8 @@ while system_status:
     ff_metric = ff_weight(ff_avg);
     print(ff_metric);
 
-    ar_metric = ar_weight(ar_avg);
-    print(ar_metric);
+    #ar_metric = ar_weight(ar_avg);
+    #print(ar_metric);
 
     haptic_output(matrix(hr_metric,ff_metric,ar_metric));
     
