@@ -1,10 +1,10 @@
 #BIG ALGORITHM THAT CODES IN THAT MATRIX TABLE THING THAT WE MADE
-#LAST UPDATED 3/5/24 BY ABBY
+#LAST UPDATED 3/7/24 BY ABBY
 
 
 import time
 import numpy
-import my-voice-analysis
+#import my_voice_analysis
 from scipy import stats
 
 
@@ -50,65 +50,21 @@ ar_data_log = []; #ALL ARTICULATION RATE DATA
 
 current_speaker = None; #CURRENT ANALYSIS SUBJECT VIA DIARIZATION
 
+
 hr_list = [];
 hr_avg = 0;
 ff_list = [];
 ff_avg = 0;
-ar_list[];
+ar_list = [];
 ar_avg = 0;
-    
 
-#MAIN LOOP THAT CALLS ALL OF THE FUNCTIONS AND DOES ALL OF THE STUFF
-while system_status:
-    current_time = time.time() - start_time;
-    #calculate heart rate
-    #calculate fundamental frequency and articulation rate
-
-    try:
-        with open('HEARTRATEFILENAME.TXT', 'r') as hr_file:
-            hr_content = hr_file.read();
-        except FileNotFoundError:
-            print("ERROR: Heart-rate input file not found.")
-
-    try:
-        with open('VOICESTUFFFILENAME.TXT', 'r') as va_file:
-            va_content = va_file.read()
-        except FileNotFoundError:
-            print("ERROR: Vocal analyis input file not found.")
-
-    hr_content.split('\n');
-    hr_content[0] = hr_start_time;
-    hr_content.pop(0)
-    hr_content[-1] = hr_end_time;
-    hr_content.pop()
-    hr_list = hr_content;
-
-    
-    va_content.split('\n');
-    va_content[0] = current_speaker;
-    va_content.pop(0)
-    va_content[0] = va_start_time;
-    va_content.pop(0)
-    va_content[-1] = va_end_time;
-    va_content.pop()
-
-    va_content.split(' ');
-    for i in range(len(va_content)):
-        int(va_content[i]);
-    
-        if i % 2 == 0:
-            ff_list.append(i);
-        else:
-            ar_list.append(i);
-
-    
-    time.sleep(time_chunk);
-        
 
 #WEIGHTS THE HEART RATE DATA
-def hr_weight():
+def hr_weight(hr_avg):
     print("Beginning heart rate analysis... ");
-    
+
+    metric = 0;
+
     prev_hr_avg = hr_avg;
     hr_avg = sum(hr_list)/len(hr_list);
     delta_hr_avg = hr_avg - prev_hr_avg; #difference between current average and average from previous run
@@ -119,24 +75,24 @@ def hr_weight():
 
     #analyzes the slope of the current data segment
     if hr_slope < 10:
-        hr_metric += -3;
+        metric += -3;
     elif hr_slope > 10:
-        hr_metric += 3;
+        metric += 3;
     else:
-        hr_metric += 0;
+        metric += 0;
 
     #analyzes the difference between the current and previous averages
-        if delta_hr_avg < 0:
-            hr_metric += -1;
-        elif delta_hr_avg > 0:
-            hr_metric += 1;
-        else:
-            hr_metric += 0;
+    if delta_hr_avg < 0:
+        metric += -1;
+    elif delta_hr_avg > 0:
+        metric += 1;
+    else:
+        metric += 0;
 
 
     print("Heart rate analysis complete!");
     
-    return hr_metric
+    return metric
 
     
 #WEIGHTS THE FUNDAMENTAL FREQUENCY DATA
@@ -226,7 +182,7 @@ def matrix(hr_metric, ff_metric, ar_metric):
 #CALCULATED ABOVE
 def haptic_output():
     print("Current Speaker Tag: " + current_speaker);
-    
+    '''
     if mo == -2:
         
     elif mo == -1:
@@ -236,7 +192,58 @@ def haptic_output():
     elif mo == 1:
 
     elif mo == 2:
+    '''
 
+
+
+
+#MAIN LOOP THAT CALLS ALL OF THE FUNCTIONS AND DOES ALL OF THE STUFF
+while system_status:
+    current_time = time.time() - start_time;
+    #calculate heart rate
+    #calculate fundamental frequency and articulation rate
+
+    try:
+        with open('HEARTRATE.TXT', 'r') as hr_file:
+            hr_content = hr_file.read();
+    except FileNotFoundError:
+        print("ERROR: Heart-rate input file not found.")
+
+    try:
+        with open('VOICEANALYSIS.TXT', 'r') as va_file:
+            va_content = va_file.read();
+    except FileNotFoundError:
+        print("ERROR: Vocal analyis input file not found.")
+
+
+    hr_content = hr_content.split('\n');
+    hr_content = [int(x) for x in hr_content]
+    hr_start_time = hr_content[0];
+    hr_content.pop(0)
+    hr_end_time = hr_content[-1];
+    hr_content.pop()
+    hr_list = hr_content;
+
+    
+    va_content = va_content.split('\n');
+    current_speaker = va_content[0];
+    va_content.pop(0)
+    va_start_time = va_content[1];
+    va_content.pop(0)
+    va_end_time = va_content[1];
+    va_content.pop()
+    
+    for i in va_content:
+        temp = i.split(' ');
+        ff_list.append(temp[0]);
+        ar_list.append(temp[1]);
+
+    hr_metric = hr_weight(hr_avg);
+    print(hr_metric)
+    
+    time.sleep(time_chunk);
+    break
+        
 
 
 #NEED TO FIX THIS THIS SYNTAX DOESNT EXIST LOL WILL FIX LATER
