@@ -1,5 +1,5 @@
 #BIG ALGORITHM THAT CODES IN THAT MATRIX TABLE THING THAT WE MADE
-#LAST UPDATED 3/7/24 BY ABBY
+#LAST UPDATED 3/12/24 BY ABBY
 
 
 import time
@@ -8,8 +8,22 @@ import serial
 from scipy import stats
 
 
+import HEARTRATECLASS
+import VOICECLASS
+
+
 '''
-HEART RATE INPUT FILE FORMAT:
+INTERFACING NOTE THINGS AND INFORMATION
+    - all input is given for a specific time chunk of time_chunk seconds
+    - all python files must be saved in the same directory
+    - Process Flow:
+        * main program calls heartrate and audio analysis files
+        * heartrate and audio files return lists in the output format seen below
+        * main program calculates the response sent to the user as defined by the matrix thing
+        * matrix output is sent through serial communication to the picos and arduino code
+        * run it back!
+
+HEART RATE INPUT FORMAT:
     starting time stamp [integer : sec]
     heart rate data [integer : BPM]
     .
@@ -17,8 +31,8 @@ HEART RATE INPUT FILE FORMAT:
     ...
     ending time stamp [integer : sec]
 
-VOCAL ANALYSIS INPUT FILE FORMAT:
-    current speaker [integer : 1,2,3]
+VOCAL ANALYSIS INPUT FORMAT:
+    current speaker [integer : 0,1,2]
     starting time stamp [integer : sec]
     fundamental frequency data [integer : Hz] articulation rate data [integer]
     .
@@ -40,6 +54,8 @@ METRICS REFLECT THE CHANGES IN THE ASSOCIATED INPUT DATA:
    * 0 indicates no change
    * 1 indicates a positive change
 '''
+
+
 hr_metric = None;
 ff_metric = None;
 ar_metric = None;
@@ -130,11 +146,12 @@ def ff_weight(ff_avg):
     
     return metric
 
+
 #WEIGHTS THE ARTICULATION RATE DATA
 def ar_weight(ar_avg):
     print("Beginning articulation rate analysis..." + '\n');
     print("Articulation rate analysis complete!" + '\n');
-    return ar_weight
+    return metric
 
 
 #CALCULATES THE OUTPUT OF THE MATRIX TO BE SENT TO THE HAPTIC SYSTEM DEPENDING ON THE INPUT DATA
@@ -243,20 +260,13 @@ while system_status:
     #calculate fundamental frequency and articulation rate
 
     try:
-        with open('HEARTRATE.TXT', 'r') as hr_file:
-            hr_content = hr_file.read();
-    except FileNotFoundError:
-        print("ERROR: Heart-rate input file not found.")
-
-    try:
         with open('VOICEANALYSIS.TXT', 'r') as va_file:
             va_content = va_file.read();
     except FileNotFoundError:
         print("ERROR: Vocal analyis input file not found.")
 
 
-    hr_content = hr_content.split('\n');
-    hr_content = [int(x) for x in hr_content]
+    hr_content = HEARTRATE.OUTPUTFUNCTION;
     hr_start_time = hr_content[0];
     hr_content.pop(0)
     hr_end_time = hr_content[-1];
@@ -264,7 +274,7 @@ while system_status:
     hr_list = hr_content;
 
     
-    va_content = va_content.split('\n');
+    va_content = VOICEANALYSIS.OUTPUTFUNCTION;
     current_speaker = va_content[0];
     va_content.pop(0)
     va_start_time = va_content[1];
@@ -274,14 +284,12 @@ while system_status:
     
     for i in va_content:
         temp = i.split(' ');
-        ff_list.append(int(temp[0]));
-        ar_list.append(int(temp[1]));
+        ff_list.append(temp[0]);
+        ar_list.append(temp[1]);
 
     hr_metric = hr_weight(hr_avg);
-    print(hr_metric)
 
     ff_metric = ff_weight(ff_avg);
-    print(ff_metric);
 
     #ar_metric = ar_weight(ar_avg);
     #print(ar_metric);
