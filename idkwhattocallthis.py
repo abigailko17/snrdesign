@@ -33,6 +33,7 @@ system_status = True;
 time_chunk = 10; #TIME TO WAIT BETWEEN ANALYSIS LOOPS
 
 
+
 '''
 METRICS REFLECT THE CHANGES IN THE ASSOCIATED INPUT DATA:
    * -1 indicates a negative change
@@ -135,6 +136,7 @@ def ar_weight(ar_avg):
     print("Articulation rate analysis complete!" + '\n');
     return ar_weight
 
+
 #CALCULATES THE OUTPUT OF THE MATRIX TO BE SENT TO THE HAPTIC SYSTEM DEPENDING ON THE INPUT DATA
 #FOR THE HEART RATE, FUNDAMENTAL FREQUENCY, AND ARTICULATION RATE
 def matrix(hr_metric, ff_metric, ar_metric):
@@ -203,19 +205,35 @@ def matrix(hr_metric, ff_metric, ar_metric):
 
 #SEND SERIAL OUTPUT TO THE HAXYLS TO NOTIFY THE USER AS INDICATED BY THE METRIC OUTPUT
 #CALCULATED ABOVE
+
+SERIAL_PORT = 'SERIAL PORT NAME'
+ser = serial.Serial(port=SERIAL_PORT, baudrate=9600, timeout=1)
+
+def write_read(x):
+    arduino.write(bytes(x,'utf-8'))
+    time.sleep(0.05)
+    data = arduino.readline()
+    return data
+
+
 def haptic_output(mo):
     print("Current Speaker Tag: " + current_speaker);
-    '''
+    
     if mo == -2:
+        ser.writelines(b'-2')    
         
     elif mo == -1:
+        ser.writelines(b'-1')    
         
     elif mo == 0:
+        ser.writelines(b'0')    
 
     elif mo == 1:
-
+        ser.writelines(b'1')
+        
     elif mo == 2:
-    '''
+        ser.writelines(b'2')    
+    
 
 
 #MAIN LOOP THAT CALLS ALL OF THE FUNCTIONS AND DOES ALL OF THE STUFF
